@@ -7,6 +7,18 @@ import { PlusCircle, Upload, Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+
+interface OpnameRow {
+  id: string;
+  nomor: string;
+  tanggal: string;
+  gudang: string;
+  jumlahStok: number;
+  jumlahStokAktual: number;
+  penanggungJawab: string;
+  // tambahkan field lain jika ada
+}
 
 // Dummy data untuk contoh
 const dummyData = [
@@ -23,7 +35,7 @@ const dummyData = [
 ];
 
 export default function StokOpnamePage() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<OpnameRow[]>([]);
   const [deleteId, setDeleteId] = useState<string|null>(null);
   const [loading, setLoading] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -31,6 +43,7 @@ export default function StokOpnamePage() {
   const [importFormat, setImportFormat] = useState<'excel'|'csv'>('excel');
   const [gudangList, setGudangList] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   const fetchData = () => {
     fetch("/api/opname")
@@ -130,7 +143,7 @@ export default function StokOpnamePage() {
                   <TableCell>{row.jumlahStokAktual}</TableCell>
                   <TableCell>{row.penanggungJawab}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" onClick={() => router.push(`/opname/${row.id}`)}>
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => setDeleteId(row.id)} className="text-red-500">
