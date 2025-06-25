@@ -89,7 +89,7 @@ export async function POST(
 
     // Buat barang baru
     const barang = await prisma.barang.create({
-      data: { nama, sku, jenis, kategori, satuan },
+      data: { nama, sku, jenis, kategori, satuan, hargaBeli: 0 },
     });
 
     // Tambah stok di gudang

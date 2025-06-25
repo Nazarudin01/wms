@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function DELETE(
   request: Request,
@@ -31,7 +32,7 @@ export async function DELETE(
   } catch (error) {
     console.error("Error deleting gudang:", error);
     // Cek jika gudang tidak ditemukan
-    if (error instanceof prisma.PrismaClientKnownRequestError) {
+    if (error instanceof PrismaClientKnownRequestError) {
       if (error.code === 'P2025') {
         return NextResponse.json(
           { error: "Gudang tidak ditemukan." },

@@ -12,19 +12,7 @@ export async function GET() {
 
     const stokMasuk = await prisma.stokMasuk.findMany({
       include: {
-        gudang: {
-          select: {
-            kode: true,
-            nama: true,
-          },
-        },
-        barang: {
-          select: {
-            kode: true,
-            nama: true,
-            satuan: true,
-          },
-        },
+        items: true,
       },
       orderBy: {
         tanggal: 'desc',
@@ -49,25 +37,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { tanggal, gudangId, barangId, jumlah, keterangan } = body;
+    const { tanggal, pemasok, gudang, items, nomor } = body;
 
-    if (!tanggal || !gudangId || !barangId || !jumlah || !keterangan) {
+    if (!tanggal || !pemasok || !gudang || !items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
-        { error: "Semua field harus diisi" },
+        { error: "Data tidak lengkap" },
         { status: 400 }
-      );
-    }
-
-    // Update stok barang
-    const barang = await prisma.barang.findUnique({
-      where: { id: barangId },
-      select: { stok: true },
-    });
-
-    if (!barang) {
-      return NextResponse.json(
-        { error: "Barang tidak ditemukan" },
-        { status: 404 }
       );
     }
 
@@ -75,34 +50,23 @@ export async function POST(request: Request) {
       // Create stok masuk record
       const stokMasuk = await tx.stokMasuk.create({
         data: {
+          nomor: nomor || `SM-${Date.now()}`,
           tanggal: new Date(tanggal),
-          gudangId,
-          barangId,
-          jumlah: parseInt(jumlah),
-          keterangan,
+          pemasok,
+          gudang,
+          status: "COMPLETED",
+          total: 0,
+          items: {
+            create: items.map((item: any) => ({
+              sku: item.sku,
+              nama_barang: item.nama_barang,
+              qty: Number(item.qty),
+              harga: Number(item.harga) || 0,
+            })),
+          },
         },
         include: {
-          gudang: {
-            select: {
-              kode: true,
-              nama: true,
-            },
-          },
-          barang: {
-            select: {
-              kode: true,
-              nama: true,
-              satuan: true,
-            },
-          },
-        },
-      });
-
-      // Update barang stok
-      await tx.barang.update({
-        where: { id: barangId },
-        data: {
-          stok: barang.stok + parseInt(jumlah),
+          items: true,
         },
       });
 

@@ -74,7 +74,7 @@ export async function POST(request: Request) {
     }
 
     // Validasi items
-    for (const [i, item] of items.entries()) {
+    for (const [i, item] of Array.from(items.entries())) {
       if (
         !item.sku ||
         !item.nama_barang ||
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
           throw new Error(`Barang dengan SKU ${item.sku} atau gudang dengan ID ${gudang} tidak ditemukan`);
         }
 
-        const existingStok = await tx.stokGudang.findFirst({
+        let stokGudang = await tx.stokGudang.findFirst({
           where: {
             barangId: barang.id,
             gudangId: gudangData.id,
@@ -152,15 +152,15 @@ export async function POST(request: Request) {
           },
         });
 
-        if (existingStok) {
+        if (stokGudang) {
           await tx.stokGudang.update({
-            where: { id: existingStok.id },
+            where: { id: stokGudang.id },
             data: { 
-              stok: existingStok.stok + Number(item.qty)
+              stok: stokGudang.stok + Number(item.qty)
             },
           });
         } else {
-          await tx.stokGudang.create({
+          stokGudang = await tx.stokGudang.create({
             data: {
               barangId: barang.id,
               gudangId: gudangData.id,
@@ -171,6 +171,18 @@ export async function POST(request: Request) {
             },
           });
         }
+
+        // Update stokMasukItem agar stokGudangId terisi
+        await tx.stokMasukItem.updateMany({
+          where: {
+            stokMasukId: stokMasuk.id,
+            sku: item.sku,
+            // Jika ada field lain yang bisa membedakan, tambahkan di sini
+          },
+          data: {
+            stokGudangId: stokGudang?.id,
+          },
+        });
 
         // Update only updatedAt on Barang (optional)
         await tx.barang.update({

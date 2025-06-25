@@ -22,21 +22,19 @@ export async function GET(
 
     const barang = await prisma.barang.findMany({
       where: {
-        gudangId: params.id,
         OR: [
-          { kode: { contains: query, mode: 'insensitive' } },
+          { sku: { contains: query, mode: 'insensitive' } },
           { nama: { contains: query, mode: 'insensitive' } },
           { kategori: { contains: query, mode: 'insensitive' } },
         ],
       },
       select: {
         id: true,
-        kode: true,
+        sku: true,
         nama: true,
         kategori: true,
         satuan: true,
-        harga: true,
-        stok: true,
+        hargaBeli: true,
         createdAt: true,
         updatedAt: true,
       },

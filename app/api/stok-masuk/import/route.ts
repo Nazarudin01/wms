@@ -28,7 +28,7 @@ function parseDateString(dateString: string): Date {
   throw new Error(`Format tanggal tidak valid: ${dateString}`);
 }
 
-async function generateNextNomor(tx: Omit<PrismaClient, ".disconnect" | ".on" | ".connect" | ".use" | ".transaction">): Promise<string> {
+async function generateNextNomor(tx: any): Promise<string> {
   const today = new Date();
   const monthYear = format(today, 'MMyy'); // e.g., 0625 for June 2025
   const prefix = `SM-${monthYear}-`;
@@ -95,9 +95,13 @@ export async function POST(request: NextRequest) {
     
     let createdCount = 0;
     for (const group of Object.values(groupedByTransaction as any)) {
+      const { tanggal, pemasokNama, gudangNama, items } = group as {
+        tanggal: string;
+        pemasokNama: string;
+        gudangNama: string;
+        items: any[];
+      };
       await prisma.$transaction(async (tx) => {
-        const { tanggal, pemasokNama, gudangNama, items } = group;
-
         const pemasok = await tx.pemasok.findFirst({ where: { nama: pemasokNama } });
         if (!pemasok) throw new Error(`Pemasok dengan nama "${pemasokNama}" tidak ditemukan.`);
         

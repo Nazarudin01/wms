@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     
     const data: Record<string, any> = {};
-    for (const [key, value] of formData.entries()) {
+    for (const [key, value] of Array.from(formData.entries())) {
       if (key !== 'gambar') {
         data[key] = value;
       }

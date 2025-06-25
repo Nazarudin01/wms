@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
     const workbook = read(buffer, { type: "buffer" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = utils.sheet_to_json(sheet, { header: 1 });
+    const rows: any[][] = utils.sheet_to_json(sheet, { header: 1 });
 
     // Baris 1: Tanggal, Baris 2: Penanggung Jawab
     let tanggalRaw = rows[0]?.[0];
