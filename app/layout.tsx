@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <SessionProvider>
+        <SessionProvider session={null}>
           <div className="flex min-h-screen">
             <Sidebar />
             <main className="flex-1 bg-gray-50">
