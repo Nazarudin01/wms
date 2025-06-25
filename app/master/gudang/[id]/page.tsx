@@ -327,7 +327,7 @@ export default function GudangDetailPage({ params }: { params: { id: string } })
         <EditRakModal
           isOpen={isEditRakModalOpen}
           onClose={() => setIsEditRakModalOpen(false)}
-          onUpdate={handleUpdateRak}
+          onSubmit={handleUpdateRak}
           availableRaks={availableRaks}
           currentRakId={availableRaks.find(r => r.kode === selectedBarang.kodeRak)?.id || ""}
         />
