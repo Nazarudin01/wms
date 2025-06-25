@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { compare } from "bcrypt";
 import { Role } from "@prisma/client";
 import { rateLimit } from "@/lib/rate-limit";
-import { PrismaAdapter } from "@auth/prisma-adapter";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
