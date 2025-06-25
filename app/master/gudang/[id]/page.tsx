@@ -40,6 +40,12 @@ interface Barang {
   harga: number;
 }
 
+interface Rak {
+  id: string;
+  kode: string;
+  // tambahkan field lain jika ada
+}
+
 export default function GudangDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,7 +59,7 @@ export default function GudangDetailPage({ params }: { params: { id: string } })
 
   // State for edit rak modal
   const [isEditRakModalOpen, setIsEditRakModalOpen] = useState(false);
-  const [availableRaks, setAvailableRaks] = useState([]);
+  const [availableRaks, setAvailableRaks] = useState<Rak[]>([]);
 
   // State for delete gudang modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -64,7 +70,7 @@ export default function GudangDetailPage({ params }: { params: { id: string } })
       try {
         const res = await fetch('/api/master-data/kode-rak');
         const data = await res.json();
-        setAvailableRaks(data.data || []);
+        setAvailableRaks((data.data || []) as Rak[]);
       } catch (error) {
         console.error("Failed to fetch all raks", error);
       }
