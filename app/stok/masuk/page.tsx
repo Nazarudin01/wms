@@ -160,13 +160,13 @@ export default function StokMasukPage() {
 
   // Kolom dengan mapping nama pemasok/gudang
   const columns = baseColumns.map(col => {
-    if (col.accessorKey === "pemasok") {
+    if ((col as any).accessorKey === "pemasok") {
       return {
         ...col,
         cell: ({ row }: any) => getNamaPemasok(row.getValue("pemasok")),
       };
     }
-    if (col.accessorKey === "gudang") {
+    if ((col as any).accessorKey === "gudang") {
       return {
         ...col,
         cell: ({ row }: any) => getNamaGudang(row.getValue("gudang")),
