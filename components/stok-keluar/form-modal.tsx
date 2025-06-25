@@ -141,7 +141,7 @@ export function StokKeluarFormModal({ isOpen, onClose, onSuccess }: {
       toast({
         title: "Sukses",
         description: "Data stok keluar berhasil disimpan.",
-        variant: "success",
+        variant: "default",
       });
       onSuccess(); // This will trigger data refresh on the parent page
       onClose();
