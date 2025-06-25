@@ -317,9 +317,9 @@ export default function GudangDetailPage({ params }: { params: { id: string } })
         <ProductDetailModal
           isOpen={isDetailModalOpen}
           onClose={() => setIsDetailModalOpen(false)}
-          product={selectedBarang}
-          onEditRak={handleOpenEditRak}
-          onDeleteStok={handleDeleteStokGudang}
+          barang={selectedBarang}
+          onEdit={handleOpenEditRak}
+          onDelete={handleDeleteStokGudang}
         />
       )}
       
