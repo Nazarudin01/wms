@@ -53,7 +53,7 @@ export default function BuatOpnamePage() {
   const [gudangId, setGudangId] = useState<string | null>(null);
   const [gudangList, setGudangList] = useState<any[]>([]);
   const [data, setData] = useState<any[]>([]);
-  const [tanggal, setTanggal] = useState<Date>(new Date());
+  const [tanggal, setTanggal] = useState<Date | undefined>(undefined);
   const [penanggungJawab, setPenanggungJawab] = useState("");
   const [nomorOpname, setNomorOpname] = useState<string>("");
   const [showModal, setShowModal] = useState(false);
