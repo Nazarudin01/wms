@@ -5,8 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusCircle, Upload, Eye } from "lucide-react";
 
+interface StokOpname {
+  id: string;
+  nomor: string;
+  tanggal: string;
+  gudang: string;
+  jumlahStok: number;
+  jumlahStokAktual: number;
+  penanggungJawab: string;
+  // tambahkan field lain jika ada
+}
+
 // Dummy data untuk contoh
-const dummyData = [
+const dummyData: StokOpname[] = [
   // Contoh data, bisa diubah dengan fetch API nanti
   // {
   //   id: "1",
