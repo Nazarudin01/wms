@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import { compare } from "bcrypt";
 import { Role } from "@prisma/client";
-import { rateLimit } from "@/lib/rate-limit";
+// import { rateLimit } from "@/lib/rate-limit";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 
 export const authOptions: AuthOptions = {
@@ -20,12 +20,13 @@ export const authOptions: AuthOptions = {
           throw new Error("Email dan password diperlukan");
         }
 
-        const limiter = await rateLimit(credentials.email);
-        if (!limiter.success) {
-          throw new Error(
-            "Terlalu banyak percobaan login. Silakan coba lagi nanti."
-          );
-        }
+        // Temporarily disable rate limiting
+        // const limiter = await rateLimit(credentials.email);
+        // if (!limiter.success) {
+        //   throw new Error(
+        //     "Terlalu banyak percobaan login. Silakan coba lagi nanti."
+        //   );
+        // }
 
         try {
           const user = await prisma.user.findUnique({
