@@ -113,30 +113,45 @@ export default function BuatOpnamePage() {
 
   const handleKonfirmasi = async () => {
     setShowModal(false);
+    // Validasi barangId
+    const validItems = data.filter(row => row.barangId);
+    if (validItems.length !== data.length) {
+      toast.error("Ada barang tanpa barangId, data tidak valid!");
+      return;
+    }
+    // Pastikan tanggal string ISO
+    const tanggalStr = tanggal instanceof Date ? tanggal.toISOString().slice(0, 10) : tanggal;
+    const payload = {
+      nomor: nomorOpname,
+      tanggal: tanggalStr,
+      gudangId,
+      penanggungJawab,
+      items: validItems.map((row) => ({
+        id: row.id,
+        barangId: row.barangId,
+        stok: row.stok,
+        stokAktual: row.stokAktual,
+        selisih: row.selisih,
+        satuan: row.satuan,
+      })),
+    };
+    console.log("Kirim opname:", payload);
     try {
       const res = await fetch("/api/opname", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nomor: nomorOpname,
-          tanggal,
-          gudangId,
-          penanggungJawab,
-          items: data.map((row) => ({
-            id: row.id,
-            barangId: row.barangId,
-            stok: row.stok,
-            stokAktual: row.stokAktual,
-            selisih: row.selisih,
-            satuan: row.satuan,
-          })),
-        }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err?.error || "Gagal menyimpan opname");
+        return;
+      }
       toast.success("Opname berhasil disimpan dan stok gudang terupdate!");
       router.push("/opname");
-    } catch (error) {
-      toast.error("Gagal menyimpan opname");
+    } catch (error: any) {
+      const msg = error?.message || error?.toString() || "Gagal menyimpan opname";
+      toast.error(msg);
     }
   };
 

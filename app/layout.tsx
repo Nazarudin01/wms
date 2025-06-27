@@ -1,9 +1,11 @@
+"use client"
 import type { Metadata, Viewport } from 'next'
 import '@/globals.css'
 import { Inter } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
 import { SessionProvider } from '@/components/SessionProvider'
 import Sidebar from "@/components/Sidebar"
+import { usePathname } from 'next/navigation'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -32,16 +34,23 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/login';
+
   return (
     <html lang="en">
       <body className={inter.className}>
         <SessionProvider session={null}>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 bg-gray-50">
-              {children}
-            </main>
-          </div>
+          {isLoginPage ? (
+            <>{children}</>
+          ) : (
+            <div className="flex min-h-screen">
+              <Sidebar />
+              <main className="flex-1 bg-gray-50">
+                {children}
+              </main>
+            </div>
+          )}
           <Toaster />
         </SessionProvider>
       </body>
