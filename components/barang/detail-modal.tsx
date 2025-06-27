@@ -37,7 +37,7 @@ export function BarangDetailModal({ isOpen, onClose, barang }: BarangDetailModal
         <div className="grid grid-cols-3 gap-6 py-4">
           <div className="col-span-1">
             <img
-              src={barang.gambar ? `/uploads/${barang.gambar}` : "/placeholder.png"}
+              src={barang.gambar?.startsWith('http') ? barang.gambar : `/uploads/${barang.gambar}`}
               alt={barang.nama}
               className="w-full h-auto object-cover rounded-md border"
               onError={(e) => {

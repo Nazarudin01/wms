@@ -52,7 +52,7 @@ export default function RakPage() {
     }
   }
 
-  const onSubmit = async (data: FormData) => {
+const onSubmit = async (data: FormData) => {
     try {
       setIsLoading(true)
       console.log("Submitting data:", { kode: data.kode, keterangan: data.keterangan })
@@ -89,7 +89,7 @@ export default function RakPage() {
     }
   }
 
-  const onDelete = async (id: string) => {
+const onDelete = async (id: string) => {
     try {
       const response = await fetch(`/api/master-data/kode-rak/${id}`, {
         method: "DELETE",
@@ -113,9 +113,9 @@ export default function RakPage() {
         <h2 className="text-3xl font-bold tracking-tight">Master Data Rak</h2>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Tambah Rak
-            </Button>
+        <Button onClick={() => setOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" /> Tambah Rak
+        </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>

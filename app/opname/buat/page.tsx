@@ -122,18 +122,18 @@ export default function BuatOpnamePage() {
     // Pastikan tanggal string ISO
     const tanggalStr = tanggal instanceof Date ? tanggal.toISOString().slice(0, 10) : tanggal;
     const payload = {
-      nomor: nomorOpname,
+          nomor: nomorOpname,
       tanggal: tanggalStr,
-      gudangId,
-      penanggungJawab,
+          gudangId,
+          penanggungJawab,
       items: validItems.map((row) => ({
-        id: row.id,
-        barangId: row.barangId,
-        stok: row.stok,
-        stokAktual: row.stokAktual,
-        selisih: row.selisih,
-        satuan: row.satuan,
-      })),
+            id: row.id,
+            barangId: row.barangId,
+            stok: row.stok,
+            stokAktual: row.stokAktual,
+            selisih: row.selisih,
+            satuan: row.satuan,
+          })),
     };
     console.log("Kirim opname:", payload);
     try {

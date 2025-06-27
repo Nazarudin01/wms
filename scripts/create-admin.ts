@@ -4,8 +4,8 @@ import { hash } from 'bcryptjs'
 const prisma = new PrismaClient()
 
 async function main() {
-  const email = 'admin@example.com'
-  const password = 'admin123'
+  const email = 'sinarsagara@wms.com'
+  const password = 'Sinarsagara9'
   const hashedPassword = await hash(password, 12)
 
   try {
@@ -17,6 +17,7 @@ async function main() {
         name: 'Administrator',
         password: hashedPassword,
         role: 'ADMIN',
+        isActive: true,
       },
     })
 

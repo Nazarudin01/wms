@@ -128,15 +128,16 @@ async function main() {
     });
   }
 
-  const password = await hash('password123', 12);
+  const password = await hash('Sinarsagara9', 12);
   const user = await prisma.user.upsert({
-    where: { email: 'admin@example.com' },
+    where: { email: 'sinarsagara@wms.com' },
     update: {},
     create: {
-      email: 'admin@example.com',
+      email: 'sinarsagara@wms.com',
       name: 'Admin',
       password,
       role: 'ADMIN',
+      isActive: true,
     },
   });
   console.log({ user });

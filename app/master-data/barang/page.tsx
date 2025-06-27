@@ -46,7 +46,7 @@ const getColumns = ({ onEdit, onDelete, onViewDetail }: ColumnsProps): ColumnDef
         <div className="relative w-16 h-16 flex items-center justify-center bg-stone-100 rounded">
           {barang.gambar ? (
             <img
-              src={`/uploads/${barang.gambar}`}
+              src={barang.gambar?.startsWith('http') ? barang.gambar : `/uploads/${barang.gambar}`}
               alt={barang.nama}
               className="w-full h-full object-cover rounded"
               onError={(e) => {

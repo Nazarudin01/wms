@@ -94,7 +94,7 @@ export default function DetailBarangModal({
           <div className="space-y-4">
             <div className="relative aspect-square w-full overflow-hidden rounded-lg border">
               <img
-                src={imagePreview || (barang.gambar ? `/uploads/${barang.gambar}` : '/placeholder.png')}
+                src={imagePreview || (barang.gambar ? (barang.gambar.startsWith('http') ? barang.gambar : `/uploads/${barang.gambar}`) : '/placeholder.png')}
                 alt={barang.nama}
                 className="object-cover w-full h-full"
                 onError={(e) => {
