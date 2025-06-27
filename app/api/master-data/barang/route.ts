@@ -3,8 +3,16 @@ import prisma from "@/lib/prisma";
 import { writeFile } from 'fs/promises';
 import path from 'path';
 import { z } from 'zod';
+import { v2 as cloudinary } from 'cloudinary';
 
 export const dynamic = 'force-dynamic';
+
+// Konfigurasi Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function GET() {
   try {
@@ -39,22 +47,27 @@ const barangSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    
     const data: Record<string, any> = {};
     for (const [key, value] of Array.from(formData.entries())) {
-      if (key !== 'gambar') {
-        data[key] = value;
-      }
+      if (key !== 'gambar') data[key] = value;
     }
 
     const file = formData.get('gambar') as File | null;
     if (file) {
+      // Convert File ke Buffer
       const buffer = Buffer.from(await file.arrayBuffer());
-      const filename = `${Date.now()}-${file.name.replace(/\s/g, '_')}`;
-      const uploadPath = path.join(process.cwd(), 'public/uploads', filename);
-      
-      await writeFile(uploadPath, buffer);
-      data.gambar = filename;
+      // Upload ke Cloudinary
+      const uploadResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: 'barang' },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        ).end(buffer);
+      });
+      // Simpan URL gambar dari Cloudinary
+      data.gambar = (uploadResult as any).secure_url;
     }
 
     const validatedData = barangSchema.parse(data);
