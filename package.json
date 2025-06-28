@@ -82,11 +82,15 @@
     "migrate": "ts-node --project scripts/tsconfig.json scripts/migrate.ts",
     "create-admin": "ts-node --project scripts/tsconfig.json scripts/create-admin.ts",
     "setup": "npm run migrate && npm run create-admin",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && next build"
   },
   "name": "wms",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "prisma": {
     "schema": "prisma/schema.prisma",
     "seed": "ts-node --project prisma/tsconfig.json prisma/seed.ts"
