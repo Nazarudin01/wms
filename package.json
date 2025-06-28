@@ -61,6 +61,7 @@
     "react-datepicker": "^4.25.0",
     "react-day-picker": "^8.9.1",
     "react-dom": "^18.2.0",
+    "react-hook-form": "^7.59.0",
     "react-hot-toast": "^2.5.2",
     "react-select": "^5.8.0",
     "recharts": "^2.10.3",
