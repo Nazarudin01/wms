@@ -1,6 +1,6 @@
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import prisma from "@/lib/prisma";
+import prisma from "./prisma";
 import { compare } from "bcrypt";
 import { Role } from "@prisma/client";
 // import { rateLimit } from "@/lib/rate-limit";
@@ -16,19 +16,21 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log('🔍 NextAuth authorize called with:', { 
+          email: credentials?.email,
+          hasPassword: !!credentials?.password 
+        });
+
         if (!credentials?.email || !credentials?.password) {
+          console.log('❌ Missing credentials');
           throw new Error("Email dan password diperlukan");
         }
 
-        // Temporarily disable rate limiting
-        // const limiter = await rateLimit(credentials.email);
-        // if (!limiter.success) {
-        //   throw new Error(
-        //     "Terlalu banyak percobaan login. Silakan coba lagi nanti."
-        //   );
-        // }
-
         try {
+          console.log('🔍 Looking for user in database...');
+          console.log('🔍 Using prisma instance:', typeof prisma);
+          console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
+          
           const user = await prisma.user.findUnique({
             where: {
               email: credentials.email,
@@ -36,19 +38,33 @@ export const authOptions: AuthOptions = {
             },
           });
 
+          console.log('🔍 Database query result:', {
+            found: !!user,
+            email: user?.email,
+            name: user?.name,
+            role: user?.role,
+            isActive: user?.isActive
+          });
+
           if (!user) {
+            console.log('❌ User not found or not active');
             throw new Error("Email atau password salah");
           }
 
+          console.log('🔍 Comparing password...');
           const isPasswordValid = await compare(
             credentials.password,
             user.password
           );
 
+          console.log('🔍 Password validation result:', isPasswordValid);
+
           if (!isPasswordValid) {
+            console.log('❌ Password invalid');
             throw new Error("Email atau password salah");
           }
 
+          console.log('✅ Login successful, creating login log...');
           await prisma.loginLog.create({
             data: {
               userId: user.id,
@@ -59,6 +75,13 @@ export const authOptions: AuthOptions = {
             },
           });
 
+          console.log('✅ Returning user data:', {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          });
+
           return {
             id: user.id,
             email: user.email,
@@ -66,6 +89,7 @@ export const authOptions: AuthOptions = {
             role: user.role,
           };
         } catch (error) {
+          console.log('❌ Error in authorize:', error);
           if (error instanceof Error) {
             await prisma.loginLog.create({
               data: {
