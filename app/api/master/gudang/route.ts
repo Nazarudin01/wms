@@ -48,18 +48,49 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { kode, nama, kategori, alamat } = body;
-    if (!kode || !nama || !kategori || !alamat) {
+    let { kode, nama, kategori, alamat } = body;
+    
+    if (!nama || !kategori || !alamat) {
       return NextResponse.json({ error: "Data tidak lengkap" }, { status: 400 });
     }
-    // Cek kode unik
-    const existing = await prisma.gudang.findUnique({ where: { kode } });
-    if (existing) {
-      return NextResponse.json({ error: "Kode gudang sudah ada" }, { status: 400 });
+
+    // Jika kode tidak disediakan, generate otomatis
+    if (!kode) {
+      const existingKodes = await prisma.gudang.findMany({
+        select: { kode: true },
+        orderBy: { kode: 'asc' }
+      });
+
+      let counter = 1;
+      while (true) {
+        const testKode = "G" + String(counter).padStart(3, '0');
+        const exists = existingKodes.some(gudang => gudang.kode === testKode);
+        
+        if (!exists) {
+          kode = testKode;
+          break;
+        }
+        counter++;
+        
+        if (counter > 9999) {
+          return NextResponse.json(
+            { error: "Terlalu banyak kode gudang" },
+            { status: 500 }
+          );
+        }
+      }
+    } else {
+      // Cek kode unik jika kode disediakan
+      const existing = await prisma.gudang.findUnique({ where: { kode } });
+      if (existing) {
+        return NextResponse.json({ error: "Kode gudang sudah ada" }, { status: 400 });
+      }
     }
+
     const gudang = await prisma.gudang.create({
       data: { kode, nama, kategori, alamat },
     });
+    
     return NextResponse.json({ data: gudang });
   } catch (error) {
     console.error("Error creating gudang:", error);

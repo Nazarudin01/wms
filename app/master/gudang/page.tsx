@@ -114,10 +114,22 @@ export default function GudangPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
+      
       if (!res.ok) {
         const errorData = await res.text();
-        throw new Error(errorData || "Gagal menambah gudang");
+        const errorMessage = errorData || "Gagal menambah gudang";
+        
+        // Jika kode konflik, generate kode baru dan coba lagi
+        if (errorMessage.includes("Kode gudang sudah ada")) {
+          toast.info("Kode konflik, generate kode baru...");
+          await generateKodeGudang();
+          setIsLoading(false);
+          return; // User bisa submit lagi dengan kode baru
+        }
+        
+        throw new Error(errorMessage);
       }
+      
       const newGudang = await res.json();
       setGudangs((prev) => [newGudang, ...prev]);
       setOpen(false);

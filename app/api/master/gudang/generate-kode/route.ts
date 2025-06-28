@@ -3,21 +3,36 @@ import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const lastGudang = await prisma.gudang.findFirst({
-      orderBy: {
-        kode: 'desc'
-      }
+    // Ambil semua kode gudang yang ada
+    const existingKodes = await prisma.gudang.findMany({
+      select: { kode: true },
+      orderBy: { kode: 'asc' }
     });
 
+    // Cari kode berikutnya yang belum digunakan
     let newKode = "G001";
-    if (lastGudang && lastGudang.kode) {
-      // Ambil angka setelah huruf G (atau prefix lain)
-      const match = lastGudang.kode.match(/G(\d+)/);
-      const lastNumber = match ? parseInt(match[1]) : 0;
-      if (lastNumber > 0) {
-        newKode = "G" + String(lastNumber + 1).padStart(3, '0');
-      } else {
-        newKode = "G001";
+    let counter = 1;
+
+    while (true) {
+      const testKode = "G" + String(counter).padStart(3, '0');
+      
+      // Cek apakah kode ini sudah ada
+      const exists = existingKodes.some(gudang => gudang.kode === testKode);
+      
+      if (!exists) {
+        newKode = testKode;
+        break;
+      }
+      
+      counter++;
+      
+      // Safety check untuk mencegah infinite loop
+      if (counter > 9999) {
+        console.error("Too many gudang codes generated");
+        return NextResponse.json(
+          { error: "Terlalu banyak kode gudang" },
+          { status: 500 }
+        );
       }
     }
 
