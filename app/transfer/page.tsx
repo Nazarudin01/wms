@@ -104,7 +104,7 @@ export default function TransferGudangPage() {
     setForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }));
   };
   // Handler barang change
-  const handleBarangChange = (idx, barangId) => {
+  const handleBarangChange = (idx: number, barangId: string) => {
     const barang = barangOptions.find(b => b.id === barangId);
     setForm(f => {
       const items = [...f.items];
