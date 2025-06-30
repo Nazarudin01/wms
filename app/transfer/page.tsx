@@ -34,6 +34,13 @@ interface TransferForm {
   items: TransferBarangItem[];
 }
 
+type BarangOption = {
+  id: string;
+  nama: string;
+  satuan: string;
+  stok: number;
+};
+
 export default function TransferGudangPage() {
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
@@ -49,7 +56,7 @@ export default function TransferGudangPage() {
     items: [],
   });
   const [loadingBarang, setLoadingBarang] = useState(false);
-  const [barangOptions, setBarangOptions] = useState([]);
+  const [barangOptions, setBarangOptions] = useState<BarangOption[]>([]);
   const router = useRouter();
 
   // Fetch transfer list
