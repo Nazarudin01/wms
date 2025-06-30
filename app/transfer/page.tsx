@@ -49,7 +49,7 @@ export default function TransferGudangPage() {
     setGudangList(json.data || []);
   };
   // Fetch barang by gudang asal
-  const fetchBarangByGudang = async (gudangId) => {
+  const fetchBarangByGudang = async (gudangId: string) => {
     if (!gudangId) return setBarangOptions([]);
     setLoadingBarang(true);
     const res = await fetch(`/api/master-data/gudang/${gudangId}/barang`);
