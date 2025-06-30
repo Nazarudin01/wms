@@ -83,6 +83,8 @@ model Gudang {
   updatedAt   DateTime @updatedAt
   stokGudang  StokGudang[]
   transaksiKeluar TransaksiKeluar[]
+  transferGudangAsal    TransferGudang[] @relation("GudangAsal")
+  transferGudangTujuan  TransferGudang[] @relation("GudangTujuan")
 }
 
 // Product (Barang)
@@ -102,6 +104,7 @@ model Barang {
   transaksiMasukDetails TransaksiMasukDetail[]
   transaksiKeluarDetails TransaksiKeluarDetail[]
   stokOpnameDetails StokOpnameDetail[]
+  transferGudangDetails TransferGudangDetail[]
 }
 
 // Pemasok (sebelumnya Supplier)
@@ -302,4 +305,29 @@ model Stok {
 
   @@index([barangId])
   @@index([rakId])
+}
+
+model TransferGudang {
+  id              String   @id @default(cuid())
+  nomor           String   @unique
+  tanggal         DateTime
+  penanggungJawab String
+  gudangAsalId    String
+  gudangTujuanId  String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  details         TransferGudangDetail[]
+  gudangAsal      Gudang   @relation("GudangAsal", fields: [gudangAsalId], references: [id])
+  gudangTujuan    Gudang   @relation("GudangTujuan", fields: [gudangTujuanId], references: [id])
+}
+
+model TransferGudangDetail {
+  id              String   @id @default(cuid())
+  transferGudangId String
+  barangId        String
+  satuan          String
+  stok            Int
+  jumlahTransfer  Int
+  transferGudang  TransferGudang @relation(fields: [transferGudangId], references: [id])
+  barang          Barang          @relation(fields: [barangId], references: [id])
 }

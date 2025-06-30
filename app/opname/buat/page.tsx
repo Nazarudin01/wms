@@ -156,16 +156,16 @@ export default function BuatOpnamePage() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 w-full">
       <h1 className="text-2xl font-bold mb-6">Buat Stok Opname</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 w-full">
         <div>
           <label className="block mb-2 font-semibold">No Opname</label>
-          <Input value={nomorOpname} readOnly />
+          <Input value={nomorOpname} readOnly className="max-w-xs" />
         </div>
         <div>
           <label className="block mb-2 font-semibold">Tanggal</label>
-          <DatePicker selected={tanggal} onSelect={setTanggal} />
+          <DatePicker selected={tanggal} onSelect={setTanggal} className="max-w-xs" />
         </div>
         <div>
           <label className="block mb-2 font-semibold">Penanggung Jawab</label>
@@ -174,13 +174,14 @@ export default function BuatOpnamePage() {
             onChange={(e) => setPenanggungJawab(e.target.value)}
             required
             placeholder="Nama Penanggung Jawab"
+            className="max-w-xs"
           />
         </div>
       </div>
-      <div className="mb-6 max-w-xs">
+      <div className="mb-6 w-full md:max-w-xs">
         <label className="block mb-2 font-semibold">Pilih Gudang</label>
         <Select onValueChange={setGudangId} value={gudangId || undefined}>
-          <SelectTrigger>
+          <SelectTrigger className="w-full md:max-w-xs">
             <SelectValue placeholder="Pilih Gudang" />
           </SelectTrigger>
           <SelectContent>
@@ -191,8 +192,8 @@ export default function BuatOpnamePage() {
         </Select>
       </div>
       {gudangId && (
-        <div className="border rounded-lg">
-          <Table>
+        <div className="border rounded-lg overflow-x-auto w-full">
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Gambar</TableHead>
@@ -221,7 +222,12 @@ export default function BuatOpnamePage() {
                   <TableRow key={row.id}>
                     <TableCell>
                       {row.gambar ? (
-                        <img src={row.gambar} alt={row.nama} className="w-10 h-10 object-cover rounded" />
+                        <img
+                          src={row.gambar.startsWith('http') ? row.gambar : `/uploads/${row.gambar}`}
+                          alt={row.nama}
+                          className="w-10 h-10 object-cover rounded"
+                          onError={e => { e.currentTarget.src = '/placeholder.png'; }}
+                        />
                       ) : (
                         <ImageIcon className="w-8 h-8 text-gray-400 mx-auto" />
                       )}

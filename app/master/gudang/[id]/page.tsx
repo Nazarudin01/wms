@@ -64,6 +64,10 @@ export default function GudangDetailPage({ params }: { params: { id: string } })
   // State for delete gudang modal
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
+
   // Fetch all available raks for the edit modal
   useEffect(() => {
     const fetchAllRaks = async () => {
@@ -112,6 +116,12 @@ export default function GudangDetailPage({ params }: { params: { id: string } })
     };
     fetchBarangs();
   }, [params.id, debouncedSearch]);
+
+  // Pagination logic
+  const totalRows = barangs.length;
+  const totalPages = Math.max(1, Math.ceil(totalRows / rowsPerPage));
+  const pagedBarangs = barangs.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+  useEffect(() => { setPage(1); }, [rowsPerPage]);
 
   const handleOpenDetail = (barang: Barang) => {
     setSelectedBarang(barang);
@@ -271,7 +281,7 @@ export default function GudangDetailPage({ params }: { params: { id: string } })
             </TableRow>
           </TableHeader>
           <TableBody>
-            {barangs.map((barang) => (
+            {pagedBarangs.map((barang) => (
               <TableRow key={barang.stokGudangId}>
                 <TableCell>
                   <div className="relative w-12 h-12">
@@ -310,6 +320,42 @@ export default function GudangDetailPage({ params }: { params: { id: string } })
             ))}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Pagination & Rows per page */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-4">
+        <div>
+          <label htmlFor="rowsPerPage" className="mr-2">Tampilkan</label>
+          <select
+            id="rowsPerPage"
+            value={rowsPerPage}
+            onChange={e => setRowsPerPage(Number(e.target.value))}
+            className="border rounded px-2 py-1"
+          >
+            {[15, 25, 50, 100].map(opt => (
+              <option key={opt} value={opt}>{opt} / halaman</option>
+            ))}
+          </select>
+        </div>
+        <div className="flex gap-1 items-center justify-end">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-2 py-1 border rounded disabled:opacity-50"
+          >Sebelumnya</button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map(i => (
+            <button
+              key={i}
+              onClick={() => setPage(i)}
+              className={`px-2 py-1 border rounded ${page === i ? 'bg-emerald-600 text-white' : ''}`}
+            >{i}</button>
+          ))}
+          <button
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-2 py-1 border rounded disabled:opacity-50"
+          >Berikutnya</button>
+        </div>
       </div>
 
       {/* Modals */}

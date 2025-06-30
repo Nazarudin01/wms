@@ -41,7 +41,7 @@ export function Combobox<T>({ items, value, onChange, placeholder, getOptionLabe
         {selected ? getOptionLabel(selected) : (placeholder || "Pilih...")}
       </button>
       {open && (
-        <div className="absolute z-50 mt-1 w-full bg-gray-800 border border-gray-300 rounded-b-md shadow-lg">
+        <div className="absolute z-[999] left-0 mt-1 w-full bg-gray-800 border border-gray-300 rounded-b-md shadow-lg">
           <Command shouldFilter={false} className="bg-gray-800 text-white">
             <CommandInput
               placeholder={placeholder || "Cari..."}
