@@ -102,7 +102,7 @@ export default function BuatTransferGudangPage() {
     });
   };
   // Handler jumlah transfer change
-  const handleJumlahChange = (idx, val) => {
+  const handleJumlahChange = (idx: number, val: string) => {
     setForm(f => {
       const items = [...f.items];
       items[idx].jumlahTransfer = Number(val);
@@ -212,7 +212,7 @@ export default function BuatTransferGudangPage() {
                           type="number"
                           min={1}
                           max={item.stok}
-                          value={item.jumlahTransfer}
+                          value={item.jumlahTransfer.toString()}
                           onChange={e => handleJumlahChange(idx, e.target.value)}
                           className="w-24"
                         />
