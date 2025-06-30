@@ -116,13 +116,35 @@ export async function POST(request: Request) {
     // Hitung total jika tidak dikirim
     const calculatedTotal = total ?? items.reduce((sum: number, item: any) => sum + (Number(item.qty) * Number(item.harga)), 0);
 
+    let nomorTransaksi = nomor;
+    if (!nomorTransaksi) {
+      // Generate nomor transaksi otomatis di backend
+      const now = new Date(tanggal);
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const yy = String(now.getFullYear()).slice(-2);
+      const prefix = `SM-${mm}${yy}-`;
+      const last = await prisma.stokMasuk.findFirst({
+        where: { nomor: { startsWith: prefix } },
+        orderBy: { nomor: 'desc' },
+        select: { nomor: true }
+      });
+      let nextNumber = 1;
+      if (last && last.nomor) {
+        const match = last.nomor.match(/SM-\d{4}-(\d+)/);
+        if (match) {
+          nextNumber = parseInt(match[1], 10) + 1;
+        }
+      }
+      nomorTransaksi = `${prefix}${String(nextNumber).padStart(3, '0')}`;
+    }
+
     // Transaksi: create stokMasuk, items, dan update stok gudang
     const result = await prisma.$transaction(async (tx) => {
       console.log("🔍 Creating stokMasuk record...");
       // 1. Create stokMasuk dan items
       const stokMasuk = await tx.stokMasuk.create({
         data: {
-          nomor,
+          nomor: nomorTransaksi,
           tanggal: new Date(tanggal),
           pemasok,
           gudang,
