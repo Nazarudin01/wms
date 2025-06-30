@@ -30,6 +30,8 @@ type BarangOption = {
   stok: number;
 };
 
+type FormEvent = React.FormEvent<HTMLFormElement>;
+
 export default function BuatTransferGudangPage() {
   const [gudangList, setGudangList] = useState([]);
   const [barangOptions, setBarangOptions] = useState<BarangOption[]>([]);
@@ -111,7 +113,7 @@ export default function BuatTransferGudangPage() {
   };
 
   // Simpan transfer
-  const handleSimpan = async (e) => {
+  const handleSimpan = async (e: FormEvent) => {
     e.preventDefault();
     const res = await fetch("/api/transfer-gudang", {
       method: "POST",
