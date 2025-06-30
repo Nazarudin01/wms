@@ -56,29 +56,19 @@ export async function POST(req: Request) {
 
     // Jika kode tidak disediakan, generate otomatis
     if (!kode) {
-      const existingKodes = await prisma.gudang.findMany({
-        select: { kode: true },
-        orderBy: { kode: 'asc' }
+      // Cari kode terbesar
+      const lastGudang = await prisma.gudang.findFirst({
+        orderBy: { kode: 'desc' },
+        select: { kode: true }
       });
-
-      let counter = 1;
-      while (true) {
-        const testKode = "G" + String(counter).padStart(3, '0');
-        const exists = existingKodes.some(gudang => gudang.kode === testKode);
-        
-        if (!exists) {
-          kode = testKode;
-          break;
-        }
-        counter++;
-        
-        if (counter > 9999) {
-          return NextResponse.json(
-            { error: "Terlalu banyak kode gudang" },
-            { status: 500 }
-          );
+      let nextNumber = 1;
+      if (lastGudang && lastGudang.kode) {
+        const match = lastGudang.kode.match(/G(\d+)/);
+        if (match) {
+          nextNumber = parseInt(match[1], 10) + 1;
         }
       }
+      kode = "G" + String(nextNumber).padStart(3, '0');
     } else {
       // Cek kode unik jika kode disediakan
       const existing = await prisma.gudang.findUnique({ where: { kode } });
