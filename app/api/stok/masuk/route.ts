@@ -46,19 +46,50 @@ export async function POST(request: Request) {
       );
     }
 
-    // Prepare all update queries for stock
-    const updateStokQueries = items.map((item: any) =>
-      prisma.barang.update({
-        where: { sku: item.sku },
-        data: {
-          stok: {
-            increment: Number(item.qty),
+    // 1. Resolve gudangId from kode
+    const gudangRecord = await prisma.gudang.findUnique({ where: { kode: gudang } });
+    if (!gudangRecord) {
+      return NextResponse.json({ error: "Gudang tidak ditemukan" }, { status: 400 });
+    }
+    const gudangId = gudangRecord.id;
+
+    // 2. Prepare queries for updating/creating StokGudang
+    const updateStokGudangQueries = await Promise.all(items.map(async (item: any) => {
+      // Cari barangId dari sku
+      const barangRecord = await prisma.barang.findUnique({ where: { sku: item.sku } });
+      if (!barangRecord) throw new Error(`Barang dengan SKU ${item.sku} tidak ditemukan`);
+      const barangId = barangRecord.id;
+      // Cek apakah sudah ada stokGudang
+      const stokGudang = await prisma.stokGudang.findUnique({
+        where: {
+          barangId_gudangId_kodeRakId: {
+            barangId,
+            gudangId,
+            kodeRakId: null,
           },
         },
-      })
-    );
+      });
+      if (stokGudang) {
+        // Update stok
+        return prisma.stokGudang.update({
+          where: { id: stokGudang.id },
+          data: { stok: { increment: Number(item.qty) } },
+        });
+      } else {
+        // Buat stokGudang baru
+        return prisma.stokGudang.create({
+          data: {
+            sku: item.sku,
+            nama: item.nama_barang,
+            gudangId,
+            barangId,
+            stok: Number(item.qty),
+          },
+        });
+      }
+    }));
 
-    // Prepare the stokMasuk creation query
+    // 3. Prepare the stokMasuk creation query
     const createStokMasukQuery = prisma.stokMasuk.create({
       data: {
         nomor: nomor || `SM-${Date.now()}`,
@@ -81,9 +112,9 @@ export async function POST(request: Request) {
       },
     });
 
-    // Run all queries in a batch transaction
+    // 4. Run all queries in a batch transaction
     const results = await prisma.$transaction([
-      ...updateStokQueries,
+      ...updateStokGudangQueries,
       createStokMasukQuery,
     ]);
 
