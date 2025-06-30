@@ -18,13 +18,29 @@ import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 
+interface TransferBarangItem {
+  barangId: string;
+  satuan: string;
+  stok: number;
+  jumlahTransfer: number;
+}
+
+interface TransferForm {
+  nomor: string;
+  tanggal: string;
+  penanggungJawab: string;
+  gudangAsalId: string;
+  gudangTujuanId: string;
+  items: TransferBarangItem[];
+}
+
 export default function TransferGudangPage() {
   const [data, setData] = useState([]);
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [gudangList, setGudangList] = useState([]);
   const [barangList, setBarangList] = useState([]);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<TransferForm>({
     nomor: "",
     tanggal: format(new Date(), "yyyy-MM-dd"),
     penanggungJawab: "",
