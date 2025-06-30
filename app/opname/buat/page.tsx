@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "sonner";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useRouter } from "next/navigation";
-import { PlusCircle, Upload, Eye, Image as ImageIcon } from "lucide-react";
+import { PlusCircle, Upload, Eye, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Dummy data gudang dan barang
 const gudangList = [
@@ -59,6 +59,9 @@ export default function BuatOpnamePage() {
   const [showModal, setShowModal] = useState(false);
   const [loadingBarang, setLoadingBarang] = useState(false);
   const router = useRouter();
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [search, setSearch] = useState("");
 
   // Fetch gudang
   useEffect(() => {
@@ -155,6 +158,21 @@ export default function BuatOpnamePage() {
     }
   };
 
+  // Filter dan paginasi data
+  const filteredData = data.filter(row => {
+    const q = search.toLowerCase();
+    return (
+      (row.kodeRak || "").toLowerCase().includes(q) ||
+      (row.sku || "").toLowerCase().includes(q) ||
+      (row.nama || "").toLowerCase().includes(q)
+    );
+  });
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
+  const pagedData = filteredData.slice((page - 1) * rowsPerPage, page * rowsPerPage);
+
+  // Reset page jika filter berubah
+  useEffect(() => { setPage(1); }, [search, rowsPerPage, gudangId]);
+
   return (
     <div className="p-6 w-full">
       <h1 className="text-2xl font-bold mb-6">Buat Stok Opname</h1>
@@ -193,6 +211,29 @@ export default function BuatOpnamePage() {
       </div>
       {gudangId && (
         <div className="border rounded-lg overflow-x-auto w-full">
+          {/* Search & Rows per page */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 p-4">
+            <Input
+              placeholder="Cari Rak, SKU, atau Nama Barang..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full md:w-72"
+            />
+            <div className="flex items-center gap-2 mt-2 md:mt-0">
+              <span className="mr-2">Tampilkan</span>
+              <Select value={rowsPerPage.toString()} onValueChange={v => setRowsPerPage(Number(v))}>
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[15, 25, 50, 100].map(opt => (
+                    <SelectItem key={opt} value={opt.toString()}>{opt}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="ml-2">/ halaman</span>
+            </div>
+          </div>
           <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
@@ -211,14 +252,14 @@ export default function BuatOpnamePage() {
                 <TableRow>
                   <TableCell colSpan={8} className="text-center">Loading...</TableCell>
                 </TableRow>
-              ) : data.length === 0 ? (
+              ) : pagedData.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-muted-foreground">
                     Tidak ada barang di gudang ini
                   </TableCell>
                 </TableRow>
               ) : (
-                data.map((row) => (
+                pagedData.map((row) => (
                   <TableRow key={row.id}>
                     <TableCell>
                       {row.gambar ? (
@@ -252,6 +293,41 @@ export default function BuatOpnamePage() {
               )}
             </TableBody>
           </Table>
+          {/* Pagination */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 p-4">
+            <div className="text-sm text-muted-foreground">
+              Menampilkan {pagedData.length === 0 ? 0 : (page - 1) * rowsPerPage + 1}
+              -{(page - 1) * rowsPerPage + pagedData.length} dari {filteredData.length} data
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                <Button
+                  key={p}
+                  variant={p === page ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setPage(p)}
+                >
+                  {p}
+                </Button>
+              ))}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
           <div className="flex justify-end p-4">
             <Button onClick={handleSimpan}>Simpan Opname</Button>
           </div>
