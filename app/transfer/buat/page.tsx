@@ -7,10 +7,26 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { format } from "date-fns";
 
+interface TransferBarangItem {
+  barangId: string;
+  satuan: string;
+  stok: number;
+  jumlahTransfer: number;
+}
+
+interface TransferForm {
+  nomor: string;
+  tanggal: string;
+  penanggungJawab: string;
+  gudangAsalId: string;
+  gudangTujuanId: string;
+  items: TransferBarangItem[];
+}
+
 export default function BuatTransferGudangPage() {
   const [gudangList, setGudangList] = useState([]);
   const [barangOptions, setBarangOptions] = useState([]);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<TransferForm>({
     nomor: "",
     tanggal: format(new Date(), "yyyy-MM-dd"),
     penanggungJawab: "",
