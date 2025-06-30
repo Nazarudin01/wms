@@ -100,7 +100,7 @@ export default function TransferGudangPage() {
     setForm(f => ({ ...f, items: [...f.items, { barangId: "", satuan: "", stok: 0, jumlahTransfer: 1 }] }));
   };
   // Handler hapus barang
-  const handleRemoveBarang = idx => {
+  const handleRemoveBarang = (idx: number) => {
     setForm(f => ({ ...f, items: f.items.filter((_, i) => i !== idx) }));
   };
   // Handler barang change
