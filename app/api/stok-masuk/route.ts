@@ -161,24 +161,21 @@ export async function POST(request: Request) {
       console.log("✅ StokMasuk created:", { id: stokMasuk.id, nomor: stokMasuk.nomor });
 
       // 2. Update/insert stok gudang untuk setiap item
-      for (const [index, item] of items.entries()) {
+      for (let index = 0; index < items.length; index++) {
+        const item = items[index];
         console.log(`🔍 Processing item ${index + 1}/${items.length}:`, { sku: item.sku });
-        
         // Cari barang dan gudang ID berdasarkan SKU dan ID gudang
         const barang = await tx.barang.findUnique({ where: { sku: item.sku } });
         const gudangData = await tx.gudang.findUnique({ where: { id: gudang } });
         const kodeRak = item.kodeRakId ? await tx.kodeRak.findUnique({ where: { id: item.kodeRakId } }) : null;
-        
         console.log("🔍 Found references:", { 
           hasBarang: !!barang, 
           hasGudang: !!gudangData, 
           hasKodeRak: !!kodeRak 
         });
-        
         if (!barang || !gudangData) {
           throw new Error(`Barang dengan SKU ${item.sku} atau gudang dengan ID ${gudang} tidak ditemukan`);
         }
-
         let stokGudang = await tx.stokGudang.findFirst({
           where: {
             barangId: barang.id,
@@ -186,7 +183,6 @@ export async function POST(request: Request) {
             kodeRakId: item.kodeRakId,
           },
         });
-
         if (stokGudang) {
           console.log("🔍 Updating existing stokGudang:", { id: stokGudang.id, oldStok: stokGudang.stok, newStok: stokGudang.stok + Number(item.qty) });
           await tx.stokGudang.update({
@@ -209,7 +205,6 @@ export async function POST(request: Request) {
           });
           console.log("✅ New stokGudang created:", { id: stokGudang.id });
         }
-
         // Update stokMasukItem agar stokGudangId terisi
         await tx.stokMasukItem.updateMany({
           where: {
@@ -220,7 +215,6 @@ export async function POST(request: Request) {
             stokGudangId: stokGudang?.id,
           },
         });
-
         // Update only updatedAt on Barang (optional)
         await tx.barang.update({
           where: { id: barang.id },
