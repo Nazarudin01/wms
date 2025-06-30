@@ -41,8 +41,18 @@ type BarangOption = {
   stok: number;
 };
 
+interface TransferData {
+  id: string;
+  nomor: string;
+  tanggal: string;
+  gudangAsal: { nama: string };
+  gudangTujuan: { nama: string };
+  details: any[];
+  penanggungJawab: string;
+}
+
 export default function TransferGudangPage() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<TransferData[]>([]);
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [gudangList, setGudangList] = useState([]);
