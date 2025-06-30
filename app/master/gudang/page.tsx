@@ -59,21 +59,22 @@ export default function GudangPage() {
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Fetch gudangs from API
+  const fetchGudangs = async () => {
+    try {
+      const url = debouncedSearch
+        ? `/api/master/gudang/search?q=${encodeURIComponent(debouncedSearch)}`
+        : "/api/master/gudang";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch gudangs");
+      const result = await res.json();
+      setGudangs(result.data || []);
+    } catch (error) {
+      console.error("Error fetching gudangs:", error);
+      toast.error("Gagal memuat data gudang");
+    }
+  };
+
   useEffect(() => {
-    const fetchGudangs = async () => {
-      try {
-        const url = debouncedSearch
-          ? `/api/master/gudang/search?q=${encodeURIComponent(debouncedSearch)}`
-          : "/api/master/gudang";
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Failed to fetch gudangs");
-        const result = await res.json();
-        setGudangs(result.data || []);
-      } catch (error) {
-        console.error("Error fetching gudangs:", error);
-        toast.error("Gagal memuat data gudang");
-      }
-    };
     fetchGudangs();
   }, [debouncedSearch]);
 
@@ -130,8 +131,7 @@ export default function GudangPage() {
         throw new Error(errorMessage);
       }
       
-      const newGudang = await res.json();
-      setGudangs((prev) => [newGudang, ...prev]);
+      await fetchGudangs(); // fetch ulang data dari server
       setOpen(false);
       setForm({ kode: "", nama: "", kategori: "", alamat: "" });
       toast.success("Gudang berhasil ditambahkan");
