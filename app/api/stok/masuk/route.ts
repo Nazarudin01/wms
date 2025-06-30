@@ -46,16 +46,29 @@ export async function POST(request: Request) {
       );
     }
 
+    // Using a transaction to ensure all or nothing
     const stokMasuk = await prisma.$transaction(async (tx) => {
-      // Create stok masuk record
-      const stokMasuk = await tx.stokMasuk.create({
+      // 1. Update stock for each item
+      for (const item of items) {
+        await tx.barang.update({
+          where: { sku: item.sku },
+          data: {
+            stok: {
+              increment: Number(item.qty),
+            },
+          },
+        });
+      }
+
+      // 2. Create stok masuk record
+      const createdStokMasuk = await tx.stokMasuk.create({
         data: {
           nomor: nomor || `SM-${Date.now()}`,
           tanggal: new Date(tanggal),
           pemasok,
           gudang,
           status: "COMPLETED",
-          total: 0,
+          total: items.reduce((acc: number, item: any) => acc + (Number(item.qty) * Number(item.harga)), 0),
           items: {
             create: items.map((item: any) => ({
               sku: item.sku,
@@ -70,14 +83,15 @@ export async function POST(request: Request) {
         },
       });
 
-      return stokMasuk;
+      return createdStokMasuk;
     });
 
     return NextResponse.json(stokMasuk);
   } catch (error) {
     console.error("Error creating stok masuk:", error);
+    const errorMessage = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", details: errorMessage },
       { status: 500 }
     );
   }
