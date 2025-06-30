@@ -23,9 +23,16 @@ interface TransferForm {
   items: TransferBarangItem[];
 }
 
+type BarangOption = {
+  id: string;
+  nama: string;
+  satuan: string;
+  stok: number;
+};
+
 export default function BuatTransferGudangPage() {
   const [gudangList, setGudangList] = useState([]);
-  const [barangOptions, setBarangOptions] = useState([]);
+  const [barangOptions, setBarangOptions] = useState<BarangOption[]>([]);
   const [form, setForm] = useState<TransferForm>({
     nomor: "",
     tanggal: format(new Date(), "yyyy-MM-dd"),
