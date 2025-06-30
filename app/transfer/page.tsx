@@ -51,11 +51,16 @@ interface TransferData {
   penanggungJawab: string;
 }
 
+interface Gudang {
+  id: string;
+  nama: string;
+}
+
 export default function TransferGudangPage() {
   const [data, setData] = useState<TransferData[]>([]);
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [gudangList, setGudangList] = useState([]);
+  const [gudangList, setGudangList] = useState<Gudang[]>([]);
   const [barangList, setBarangList] = useState([]);
   const [form, setForm] = useState<TransferForm>({
     nomor: "",
