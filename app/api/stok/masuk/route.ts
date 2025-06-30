@@ -46,45 +46,49 @@ export async function POST(request: Request) {
       );
     }
 
-    // Using a transaction to ensure all or nothing
-    const stokMasuk = await prisma.$transaction(async (tx) => {
-      // 1. Update stock for each item
-      for (const item of items) {
-        await tx.barang.update({
-          where: { sku: item.sku },
-          data: {
-            stok: {
-              increment: Number(item.qty),
-            },
-          },
-        });
-      }
-
-      // 2. Create stok masuk record
-      const createdStokMasuk = await tx.stokMasuk.create({
+    // Prepare all update queries for stock
+    const updateStokQueries = items.map((item: any) =>
+      prisma.barang.update({
+        where: { sku: item.sku },
         data: {
-          nomor: nomor || `SM-${Date.now()}`,
-          tanggal: new Date(tanggal),
-          pemasok,
-          gudang,
-          status: "COMPLETED",
-          total: items.reduce((acc: number, item: any) => acc + (Number(item.qty) * Number(item.harga)), 0),
-          items: {
-            create: items.map((item: any) => ({
-              sku: item.sku,
-              nama_barang: item.nama_barang,
-              qty: Number(item.qty),
-              harga: Number(item.harga) || 0,
-            })),
+          stok: {
+            increment: Number(item.qty),
           },
         },
-        include: {
-          items: true,
-        },
-      });
+      })
+    );
 
-      return createdStokMasuk;
+    // Prepare the stokMasuk creation query
+    const createStokMasukQuery = prisma.stokMasuk.create({
+      data: {
+        nomor: nomor || `SM-${Date.now()}`,
+        tanggal: new Date(tanggal),
+        pemasok,
+        gudang,
+        status: "COMPLETED",
+        total: items.reduce((acc: number, item: any) => acc + (Number(item.qty) * Number(item.harga)), 0),
+        items: {
+          create: items.map((item: any) => ({
+            sku: item.sku,
+            nama_barang: item.nama_barang,
+            qty: Number(item.qty),
+            harga: Number(item.harga) || 0,
+          })),
+        },
+      },
+      include: {
+        items: true,
+      },
     });
+
+    // Run all queries in a batch transaction
+    const results = await prisma.$transaction([
+      ...updateStokQueries,
+      createStokMasukQuery,
+    ]);
+
+    // The last result is the stokMasuk record
+    const stokMasuk = results[results.length - 1];
 
     return NextResponse.json(stokMasuk);
   } catch (error) {
