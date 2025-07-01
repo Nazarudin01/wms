@@ -53,8 +53,10 @@ export async function POST(request: Request) {
     }
     const gudangId = gudangRecord.id;
 
-    // 2. Prepare queries for updating/creating StokGudang
-    const updateStokGudangQueries = await Promise.all(items.map(async (item: any) => {
+    // 2. Check existing StokGudang records and prepare queries
+    const stokGudangQueries = [];
+    
+    for (const item of items) {
       // Cari barangId dari sku
       const barangRecord = await prisma.barang.findUnique({ where: { sku: item.sku } });
       if (!barangRecord) throw new Error(`Barang dengan SKU ${item.sku} tidak ditemukan`);
@@ -71,24 +73,28 @@ export async function POST(request: Request) {
       
       if (existingStokGudang) {
         // Update stok yang sudah ada
-        return prisma.stokGudang.update({
-          where: { id: existingStokGudang.id },
-          data: { stok: { increment: Number(item.qty) } },
-        });
+        stokGudangQueries.push(
+          prisma.stokGudang.update({
+            where: { id: existingStokGudang.id },
+            data: { stok: { increment: Number(item.qty) } },
+          })
+        );
       } else {
         // Buat stokGudang baru
-        return prisma.stokGudang.create({
-          data: {
-            sku: item.sku,
-            nama: item.nama_barang,
-            gudangId,
-            barangId,
-            stok: Number(item.qty),
-            kodeRakId: null,
-          },
-        });
+        stokGudangQueries.push(
+          prisma.stokGudang.create({
+            data: {
+              sku: item.sku,
+              nama: item.nama_barang,
+              gudangId,
+              barangId,
+              stok: Number(item.qty),
+              kodeRakId: null,
+            },
+          })
+        );
       }
-    }));
+    }
 
     // 3. Prepare the stokMasuk creation query
     const createStokMasukQuery = prisma.stokMasuk.create({
@@ -115,7 +121,7 @@ export async function POST(request: Request) {
 
     // 4. Run all queries in a batch transaction
     const results = await prisma.$transaction([
-      ...updateStokGudangQueries,
+      ...stokGudangQueries,
       createStokMasukQuery,
     ]);
 
