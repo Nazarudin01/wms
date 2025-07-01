@@ -59,20 +59,20 @@ export async function POST(request: Request) {
       const barangRecord = await prisma.barang.findUnique({ where: { sku: item.sku } });
       if (!barangRecord) throw new Error(`Barang dengan SKU ${item.sku} tidak ditemukan`);
       const barangId = barangRecord.id;
-      // Cek apakah sudah ada stokGudang
-      const stokGudang = await prisma.stokGudang.findUnique({
+      
+      // Cek apakah sudah ada stokGudang (tanpa kodeRak)
+      const existingStokGudang = await prisma.stokGudang.findFirst({
         where: {
-          barangId_gudangId_kodeRakId: {
-            barangId,
-            gudangId,
-            kodeRakId: null,
-          },
+          barangId,
+          gudangId,
+          kodeRakId: null,
         },
       });
-      if (stokGudang) {
-        // Update stok
+      
+      if (existingStokGudang) {
+        // Update stok yang sudah ada
         return prisma.stokGudang.update({
-          where: { id: stokGudang.id },
+          where: { id: existingStokGudang.id },
           data: { stok: { increment: Number(item.qty) } },
         });
       } else {
@@ -84,6 +84,7 @@ export async function POST(request: Request) {
             gudangId,
             barangId,
             stok: Number(item.qty),
+            kodeRakId: null,
           },
         });
       }
