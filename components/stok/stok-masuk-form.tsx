@@ -203,7 +203,7 @@ export function StokMasukForm({ onSuccess }: { onSuccess?: (data: any) => void }
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nomor Transaksi</FormLabel>
-                <FormControl><Input {...field} disabled /></FormControl>
+                <FormControl><Input {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}

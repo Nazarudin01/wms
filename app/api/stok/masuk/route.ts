@@ -120,9 +120,16 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Generate nomor transaksi jika tidak ada
-    let nomorTransaksi = nomor;
-    if (!nomorTransaksi) {
+    // 3. Generate nomor transaksi jika tidak ada, atau cek keunikan jika diisi user
+    let nomorTransaksi = nomor?.trim();
+    if (nomorTransaksi) {
+      // Cek apakah nomor sudah ada di database
+      const exists = await prisma.stokMasuk.findUnique({ where: { nomor: nomorTransaksi } });
+      if (exists) {
+        return NextResponse.json({ error: "Nomor transaksi sudah digunakan, silakan pilih nomor lain." }, { status: 400 });
+      }
+    } else {
+      // Generate otomatis jika kosong
       nomorTransaksi = await generateNomorTransaksi(prisma);
     }
 

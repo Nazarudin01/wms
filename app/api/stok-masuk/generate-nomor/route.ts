@@ -27,7 +27,7 @@ export async function GET() {
     }
 
     const nomor = `SM-${month}${year}-${sequence.toString().padStart(3, "0")}`;
-    return NextResponse.json({ nomor });
+    return NextResponse.json({ nomor }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Error generating nomor:", error);
     return NextResponse.json(
