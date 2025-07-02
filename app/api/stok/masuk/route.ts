@@ -31,7 +31,7 @@ export async function GET() {
 }
 
 // Helper untuk generate nomor transaksi unik dan berurutan
-default async function generateNomorTransaksi(prisma) {
+async function generateNomorTransaksi(prisma) {
   for (let i = 0; i < 5; i++) { // coba 5x
     const last = await prisma.stokMasuk.findFirst({
       orderBy: { nomor: 'desc' },
