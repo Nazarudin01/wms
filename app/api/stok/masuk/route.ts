@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { Prisma } from '@prisma/client';
 
 export async function GET() {
   try {
@@ -27,6 +28,29 @@ export async function GET() {
       { status: 500 }
     );
   }
+}
+
+// Helper untuk generate nomor transaksi unik dan berurutan
+default async function generateNomorTransaksi(prisma) {
+  for (let i = 0; i < 5; i++) { // coba 5x
+    const last = await prisma.stokMasuk.findFirst({
+      orderBy: { nomor: 'desc' },
+      where: { nomor: { startsWith: 'SM-' } }
+    });
+    let newNomor;
+    if (last && last.nomor) {
+      // Ambil angka terakhir, lalu +1
+      const lastNumber = parseInt(last.nomor.split('-')[1], 10);
+      newNomor = `SM-${(lastNumber + 1).toString().padStart(4, '0')}`;
+    } else {
+      newNomor = 'SM-0001';
+    }
+    // Cek apakah sudah ada
+    const exists = await prisma.stokMasuk.findUnique({ where: { nomor: newNomor } });
+    if (!exists) return newNomor;
+    // Jika sudah ada, ulangi
+  }
+  throw new Error('Gagal generate nomor transaksi unik');
 }
 
 export async function POST(request: Request) {
@@ -96,10 +120,16 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Prepare the stokMasuk creation query
+    // 3. Generate nomor transaksi jika tidak ada
+    let nomorTransaksi = nomor;
+    if (!nomorTransaksi) {
+      nomorTransaksi = await generateNomorTransaksi(prisma);
+    }
+
+    // 4. Prepare the stokMasuk creation query
     const createStokMasukQuery = prisma.stokMasuk.create({
       data: {
-        nomor: nomor || `SM-${Date.now()}`,
+        nomor: nomorTransaksi,
         tanggal: new Date(tanggal),
         pemasok,
         gudang,
@@ -119,7 +149,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // 4. Run all queries in a batch transaction
+    // 5. Run all queries in a batch transaction
     const results = await prisma.$transaction([
       ...stokGudangQueries,
       createStokMasukQuery,
