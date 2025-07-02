@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 export async function GET() {
   try {
@@ -31,7 +31,7 @@ export async function GET() {
 }
 
 // Helper untuk generate nomor transaksi unik dan berurutan
-async function generateNomorTransaksi(prisma) {
+async function generateNomorTransaksi(prisma: PrismaClient) {
   for (let i = 0; i < 5; i++) { // coba 5x
     const last = await prisma.stokMasuk.findFirst({
       orderBy: { nomor: 'desc' },
