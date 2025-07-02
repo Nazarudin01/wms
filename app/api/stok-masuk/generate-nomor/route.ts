@@ -20,6 +20,8 @@ export async function GET() {
       },
     });
 
+    console.log("LAST NOMOR:", lastStokMasuk?.nomor);
+
     let sequence = 1;
     if (lastStokMasuk) {
       const lastSequence = parseInt(lastStokMasuk.nomor.split("-")[2]);
@@ -27,6 +29,18 @@ export async function GET() {
     }
 
     const nomor = `SM-${month}${year}-${sequence.toString().padStart(3, "0")}`;
+
+    // Debug: tampilkan semua nomor stok masuk bulan berjalan
+    const all = await prisma.stokMasuk.findMany({
+      where: {
+        nomor: {
+          startsWith: `SM-${month}${year}-`,
+        },
+      },
+      orderBy: { nomor: "desc" },
+    });
+    console.log("ALL NOMOR STOK MASUK BULAN INI:", all.map(x => x.nomor));
+
     return NextResponse.json({ nomor }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Error generating nomor:", error);
