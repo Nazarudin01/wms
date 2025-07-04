@@ -206,6 +206,9 @@ export function StokMasukFormModal({
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (errorData.error && errorData.error.toLowerCase().includes("nomor transaksi sudah digunakan")) {
+          form.setError("nomor", { message: errorData.error });
+        }
         throw new Error(errorData.error || "Gagal menyimpan data stok masuk");
       }
 
@@ -215,7 +218,7 @@ export function StokMasukFormModal({
         description: "Data stok masuk berhasil disimpan",
       });
       onSuccess?.(result);
-      onClose();
+      form.reset();
     } catch (error) {
       toast({
         title: "Error",
@@ -243,7 +246,7 @@ export function StokMasukFormModal({
                   <FormItem>
                     <FormLabel>Nomor Transaksi</FormLabel>
                     <FormControl>
-                      <Input {...field} disabled />
+                      <Input {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

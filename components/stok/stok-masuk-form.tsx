@@ -172,6 +172,9 @@ export function StokMasukForm({ onSuccess }: { onSuccess?: (data: any) => void }
 
       if (!response.ok) {
         const errorData = await response.json();
+        if (errorData.error && errorData.error.toLowerCase().includes("nomor transaksi sudah digunakan")) {
+          form.setError("nomor", { message: errorData.error });
+        }
         throw new Error(errorData.error || "Gagal menyimpan data stok masuk");
       }
 
