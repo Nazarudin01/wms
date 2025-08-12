@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(request, { params }) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const { id } = params;
   try {
     const data = await prisma.transaksiBarangMasuk.findUnique({
@@ -15,7 +18,10 @@ export async function GET(request, { params }) {
   }
 }
 
-export async function DELETE(request, { params }) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const { id } = params;
   try {
     await prisma.transaksiBarangMasuk.delete({ where: { id } });
