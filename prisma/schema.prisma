@@ -331,3 +331,25 @@ model TransferGudangDetail {
   transferGudang  TransferGudang @relation(fields: [transferGudangId], references: [id])
   barang          Barang          @relation(fields: [barangId], references: [id])
 }
+
+// Catatan Transaksi Barang Masuk (tidak update stok)
+model TransaksiBarangMasuk {
+  id        String   @id @default(cuid())
+  nomor     String
+  tanggal   DateTime
+  pelanggan String
+  matras    String
+  pemasok   String
+  kategori  String
+  items     TransaksiBarangMasukItem[]
+}
+
+model TransaksiBarangMasukItem {
+  id                     String   @id @default(cuid())
+  transaksiBarangMasukId String
+  transaksiBarangMasuk   TransaksiBarangMasuk @relation(fields: [transaksiBarangMasukId], references: [id], onDelete: Cascade)
+  sku                    String
+  nama_barang            String
+  qty                    Int
+  satuan                 String?
+}

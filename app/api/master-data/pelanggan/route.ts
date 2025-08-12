@@ -46,4 +46,21 @@ export async function POST(request: Request) {
     console.error('Error menambah pelanggan:', error);
     return NextResponse.json({ error: 'Gagal menambah pelanggan' }, { status: 500 });
   }
+}
+
+export async function DELETE(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) {
+    return NextResponse.json({ error: "ID pelanggan wajib diisi" }, { status: 400 });
+  }
+  try {
+    await prisma.pelanggan.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    if (error.code === 'P2003') {
+      return NextResponse.json({ error: "Pelanggan tidak bisa dihapus karena masih terkait transaksi." }, { status: 400 });
+    }
+    return NextResponse.json({ error: "Gagal menghapus pelanggan." }, { status: 500 });
+  }
 } 

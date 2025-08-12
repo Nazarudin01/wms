@@ -39,6 +39,12 @@ export async function DELETE(
           { status: 404 }
         );
       }
+      if (error.code === 'P2003') {
+        return NextResponse.json(
+          { error: "Gudang tidak bisa dihapus karena masih ada transaksi terkait. Silakan hapus atau pindahkan transaksi terlebih dahulu." },
+          { status: 400 }
+        );
+      }
     }
     // Error umum lainnya
     return NextResponse.json(

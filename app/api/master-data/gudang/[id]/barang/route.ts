@@ -20,7 +20,6 @@ export async function GET(
     const stokGudang = await prisma.stokGudang.findMany({
       where: {
         gudangId: params.id,
-        stok: { gt: 0 },
         ...(searchQuery && {
           OR: [
             { barang: { nama: { contains: searchQuery, mode: "insensitive" } } },

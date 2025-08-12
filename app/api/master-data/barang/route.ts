@@ -14,14 +14,17 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category");
+    const where = category ? { kategori: category } : {};
     const barang = await prisma.barang.findMany({
+      where,
       orderBy: {
         nama: "asc",
       },
     });
-
     return NextResponse.json({
       data: barang,
     });

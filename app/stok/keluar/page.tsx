@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StokKeluarFormModal } from "@/components/stok-keluar/form-modal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function StokKeluarPage() {
   const [search, setSearch] = useState("");
@@ -21,6 +22,9 @@ export default function StokKeluarPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const [detailModal, setDetailModal] = useState<{ open: boolean; id?: string }>({ open: false });
+  const [detailData, setDetailData] = useState<any>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -49,6 +53,21 @@ export default function StokKeluarPage() {
     item.pelanggan.toLowerCase().includes(search.toLowerCase()) ||
     item.gudang.toLowerCase().includes(search.toLowerCase())
   );
+
+  const openDetail = async (id: string) => {
+    setDetailModal({ open: true, id });
+    setDetailLoading(true);
+    try {
+      const res = await fetch(`/api/stok-keluar/${id}`);
+      if (!res.ok) throw new Error("Gagal mengambil detail");
+      const data = await res.json();
+      setDetailData(data);
+    } catch (e: any) {
+      setDetailData({ error: e.message });
+    } finally {
+      setDetailLoading(false);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -112,11 +131,31 @@ export default function StokKeluarPage() {
                   <TableCell>{item.jumlahBarang}</TableCell>
                   <TableCell>{item.status}</TableCell>
                   <TableCell className="text-center">
-                    <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 mx-auto">
+                    <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 mx-auto" onClick={() => openDetail(item.id)}>
                       <Eye className="w-4 h-4 mr-2" />
                       Detail
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 mx-auto">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 mx-auto"
+                      onClick={async () => {
+                        if (confirm("Yakin ingin menghapus stok keluar ini?")) {
+                          const res = await fetch(`/api/stok-keluar/${item.id}`, { method: "DELETE" });
+                          if (res.ok) {
+                            toast({ title: "Berhasil", description: "Stok keluar berhasil dihapus." });
+                            fetchData();
+                          } else {
+                            let errMsg = "Gagal menghapus stok keluar.";
+                            try {
+                              const err = await res.json();
+                              errMsg = err.error || errMsg;
+                            } catch {}
+                            toast({ title: "Error", description: errMsg, variant: "destructive" });
+                          }
+                        }
+                      }}
+                    >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </TableCell>
@@ -132,6 +171,51 @@ export default function StokKeluarPage() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={fetchData}
       />
+
+      <Dialog open={detailModal.open} onOpenChange={open => setDetailModal({ open, id: open ? detailModal.id : undefined })}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Detail Stok Keluar</DialogTitle>
+          </DialogHeader>
+          {detailLoading ? (
+            <div>Memuat detail...</div>
+          ) : detailData?.error ? (
+            <div className="text-red-500">{detailData.error}</div>
+          ) : detailData ? (
+            <div className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <div><b>Nomor:</b> {detailData.nomor}</div>
+                <div><b>Tanggal:</b> {detailData.tanggal?.slice(0,10)}</div>
+                <div><b>Pelanggan:</b> {detailData.pelanggan}</div>
+                <div><b>Gudang:</b> {detailData.gudang}</div>
+              </div>
+              <div className="mt-4">
+                <b>Barang yang Dikeluarkan:</b>
+                <table className="w-full border mt-2">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border px-2 py-1">Nama</th>
+                      <th className="border px-2 py-1">SKU</th>
+                      <th className="border px-2 py-1">Satuan</th>
+                      <th className="border px-2 py-1">Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detailData.items?.map((b: any, i: number) => (
+                      <tr key={i}>
+                        <td className="border px-2 py-1">{b.nama}</td>
+                        <td className="border px-2 py-1">{b.sku}</td>
+                        <td className="border px-2 py-1">{b.satuan}</td>
+                        <td className="border px-2 py-1 text-right">{b.qty}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 
